@@ -13,8 +13,16 @@ bus = smbus.SMBus(1)
 # A1332 address, 0x0C(12)
 # Read data back, 2 bytes
 # raw_adc MSB, raw_adc LSB
-data0 = bus.read_byte(0x0C)
-data1 = bus.read_byte(0x0C)
+
+data0 = 0;
+data1 = 0;
+
+while (data0 == 0 and data1 == 0) :
+    
+    data0 = bus.read_byte(0x0C)
+    data1 = bus.read_byte(0x0C)
+    
+print("Receiving data")
 
 time.sleep(0.5)
 
@@ -31,4 +39,4 @@ while (True) :
     # Output data to screen
     print("Magnetic Angle : %.2f" %angle)
     
-    time.sleep(1)
+    time.sleep(0.1)
