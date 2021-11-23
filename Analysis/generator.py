@@ -51,7 +51,7 @@ for reading in range(reading_count):
 
         az, el, r = np.add(np.array(cart2sph(x,y,z)), -np.append(np.array(base_locations_rotations[reading]), [0]))
 
-        angles = np.degrees(np.add([az, el, np.pi*(r-spool_offset)/spool_radius], np.random.uniform(low = -sensor_error, high = sensor_error, size=(1,3))))[0]
+        angles = np.degrees(np.add([az, el, (r-spool_offset)/(spool_radius)], np.random.uniform(low = -sensor_error, high = sensor_error, size=(1,3))))[0]
 
         write_file.write(', '.join(map('{0:.2f}'.format, angles)) + '\n')
 
@@ -62,6 +62,7 @@ for reading in range(reading_count):
 
 
 write_file.close()
+read_file.close()
 
 ax.set_xlim3d(-2, 2)
 ax.set_ylim3d(-2, 2)
