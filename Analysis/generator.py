@@ -27,13 +27,20 @@ base_locations_rotations = np.deg2rad([
     [45 , 5],
     [90 , -4],
     [135 , -1]
-])
+]) # Rotation about z and y axis according to the right hand rule
 
-def cart2sph(x, y, z):
-    hxy = np.hypot(x, y)
-    r = np.hypot(hxy, z)
-    el = np.arctan2(z, hxy)
-    az = np.arctan2(y, x)
+def cart2sph(x, y, z, offset):
+
+    # Some matrix rotations to get us in the right frame of reference
+    x_dash = np.cos(offset[1]) * (np.cos(offset[0]) * x + np.sin(offset[0]) * y) - np.sin(offset[1]) * z
+    y_dash = -np.sin(offset[0]) * x + np.cos(offset[0]) * y
+    z_dash = np.sin(offset[1]) * (np.cos(offset[0]) * x + np.sin(offset[0]) * y) + np.cos(offset[1]) * z
+
+    
+    hxy = np.hypot(x_dash, y_dash)
+    r = np.hypot(hxy, z_dash)
+    el = np.arctan2(z_dash, hxy)
+    az = np.arctan2(y_dash, x_dash)
     return az, el, r
 
 file_reader = csv.reader(read_file)
@@ -49,7 +56,7 @@ for reading in range(reading_count):
         
         x,y,z = np.subtract(points, np.array(base_locations[reading]))
 
-        az, el, r = np.add(np.array(cart2sph(x,y,z)), -np.append(np.array(base_locations_rotations[reading]), [0]))
+        az, el, r = cart2sph(x,y,z, base_locations_rotations[reading])
 
         angles = np.degrees(np.add([az, el, (r-spool_offset)/(spool_radius)], np.random.uniform(low = -sensor_error, high = sensor_error, size=(1,3))))[0]
 
