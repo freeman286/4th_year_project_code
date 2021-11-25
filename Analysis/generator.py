@@ -28,21 +28,21 @@ base_locations = [
 water_level = 2
 
 base_rotations = np.deg2rad([
-    [45 , 5, -5],
+    [45 , 15, 0],
     [90 , -4, 3],
-    [135 , -1, -20]
+    [135 , -3, -5]
 ]) #Rotation about z, y and z axis according to the right hand rule (Euler angles)
 
-pressure_offset = [0.100, 0.200, 0.200]
+pressure_offset = [0.100, 0.100, -0.200]
 
 def cart2sph(x, y, z, base_rotation, base_location):
 
     #Some matrix rotations to get us in the right frame of reference
-    rotation = R.from_euler('zyz', -base_rotation)
+    rot = R.from_euler('zyx', -base_rotation)
 
-    [x_dash, y_dash, z_dash] = np.matmul(rotation.as_matrix(), np.array([x, y, z]).T)
-
-    d = (np.add(np.array(base_location).T, np.matmul(rotation.as_matrix(), np.array(pressure_offset).T)))[2] + water_level
+    [x_dash, y_dash, z_dash] = np.matmul(rot.as_matrix(), np.array([x, y, z]).T)
+    
+    d = water_level - (np.add(np.array(base_location).T, np.matmul(np.linalg.inv(rot.as_matrix()), np.array(pressure_offset).T)))[2]
     
     hxy = np.hypot(x_dash, y_dash)
     r = np.hypot(hxy, z_dash)
