@@ -17,12 +17,13 @@ write_path = os.getcwd() + '/angles/test.csv'
 read_file = open(read_path, "r")
 write_file = open(write_path, "w")
 
-reading_count = 3
+reading_count = 4
 
 base_locations = [
     [0,0,0],
     [1,0,0],
-    [2,0,0]
+    [2,0,0],
+    [3,0,0]
 ]
 
 water_level = 2
@@ -30,7 +31,8 @@ water_level = 2
 base_rotations = np.deg2rad([
     [45 , 15, 0],
     [90 , -4, 3],
-    [135 , -3, -5]
+    [135 , -3, -5],
+    [150 , 5, 8]
 ]) #Rotation about z, y and z axis according to the right hand rule (Euler angles)
 
 pressure_offset = [0.100, 0.100, -0.200]
@@ -67,9 +69,7 @@ for reading in range(reading_count):
 
         coords = np.degrees(np.add([az, el, (r-spool_offset)/(spool_radius)], np.random.uniform(low = -sensor_error, high = sensor_error, size=(1,3))))[0]
 
-        coords = np.append(coords, d)
-
-        write_file.write(', '.join(map('{0:.2f}'.format, coords)) + '\n')
+        write_file.write(', '.join(map('{0:.2f}'.format, coords)) + ', {0:.4f}'.format(d + np.random.uniform(low = -sensor_error, high = sensor_error)) + '\n')
 
         if (reading == 0):
             ax.scatter(points[0], points[1], points[2], color='red')
