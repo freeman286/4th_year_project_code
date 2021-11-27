@@ -19,12 +19,12 @@ write_file = open(write_path, "w")
 
 reading_count = 4
 
-base_locations = [
+base_locations = np.array([
     [0,0,0],
-    [1,0,0],
-    [2,0,0],
-    [3,0,0]
-]
+    [1,-1,0.5],
+    [2,1,-0.5],
+    [3,1,1]
+])
 
 water_level = 2
 
@@ -68,14 +68,15 @@ for reading in range(reading_count):
         az, el, r, d = cart2sph(x,y,z, base_rotations[reading], base_locations[reading])
 
         coords = np.degrees(np.add([az, el, (r-spool_offset)/(spool_radius)], np.random.uniform(low = -sensor_error, high = sensor_error, size=(1,3))))[0]
-
+        
         write_file.write(', '.join(map('{0:.2f}'.format, coords)) + ', {0:.4f}'.format(d + np.random.uniform(low = -sensor_error, high = sensor_error)) + '\n')
-
+        
         if (reading == 0):
             ax.scatter(points[0], points[1], points[2], color='red')
             
     write_file.write('\n')
 
+ax.scatter(base_locations[:,0], base_locations[:,1], base_locations[:,2], color='blue')
 
 write_file.close()
 read_file.close()
