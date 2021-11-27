@@ -93,6 +93,20 @@ def find_water_surface_transformation():
     r = rotation_matrix_from_vectors(normal_vector, np.array([[0,0,1]]).T)
 
     return r, depth_mean + pressure_centroid[2]
+
+def mean_and_variance():
+    collated_points = np.zeros((point_count, reading_count, 3))
+    means = np.zeros((point_count, 3))
+    sds =  np.zeros((point_count, 3))
+    for n in range(point_count):
+        collated_points[n,:,:] = aligned_points[n:(point_count*reading_count+n):point_count]
+        
+        means[n] = np.mean(collated_points[n,:,:], axis = 0)
+
+        sds[n] = np.std(collated_points[n,:,:], axis=0)
+
+    return means, sds
+    
         
 fig = plt.figure()
 ax = fig.gca(projection='3d')
@@ -132,7 +146,9 @@ r, d = find_water_surface_transformation()
 aligned_points = np.subtract(np.dot(aligned_points, r.T), np.tile(np.array([[0,0,d]]), (reading_count * point_count, 1)))
 pressure_points = np.subtract(np.dot(pressure_points, r.T), np.tile(np.array([[0,0,d]]), (reading_count, 1)))
 
-ax.scatter(aligned_points[:,0], aligned_points[:,1], aligned_points[:,2], color='red', label='points')  
+means, sds = mean_and_variance()
+
+ax.scatter(means[:,0], means[:,1], means[:,2], color='red', label='points')  
 ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
     
 ax.set_xlim3d(-2, 2)
