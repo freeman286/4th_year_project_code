@@ -7,7 +7,7 @@ import pylab
 from scipy.spatial.transform import Rotation as R
 
 spool_radius = 37.5e-3
-sensor_error = np.deg2rad(0.1)
+sensor_error_sd = np.deg2rad(0.1)
 pressure_error = 0.16e-3
 spool_offset = 0.281
 
@@ -67,9 +67,9 @@ for reading in range(reading_count):
 
         az, el, r, d = cart2sph(x,y,z, base_rotations[reading], base_locations[reading])
 
-        coords = np.degrees(np.add([az, el, (r-spool_offset)/(spool_radius)], np.random.uniform(low = -sensor_error, high = sensor_error, size=(1,3))))[0]
+        coords = np.degrees(np.add([az, el, (r-spool_offset)/(spool_radius)], np.random.normal(0, sensor_error_sd, size=(1,3))))[0]
         
-        write_file.write(', '.join(map('{0:.2f}'.format, coords)) + ', {0:.4f}'.format(d + np.random.uniform(low = -sensor_error, high = sensor_error)) + '\n')
+        write_file.write(', '.join(map('{0:.2f}'.format, coords)) + ', {0:.4f}'.format(d + spool_radius * np.random.normal(0, sensor_error_sd)) + '\n')
         
         if (reading == 0):
             ax.scatter(points[0], points[1], points[2], color='red')

@@ -42,11 +42,23 @@ pressure_points = np.zeros((reading_count, 3))
 
 depths = np.zeros((reading_count))
 
+ESDangle = np.deg2rad(0.1*5)
+ESDdist = ESDangle * spool_radius
+
 #Least squares adjustment
 k = np.ones((point_count, 3 * reading_count, 1)) #Residuals
 A = np.zeros((point_count, 3 * reading_count, 3)) #Adjustment shape
 m = np.zeros((point_count, 3 * reading_count, 1)) #Distance and angles in aligned frame of reference
 d = np.zeros((point_count, 3 * reading_count, 1)) #Mean distance and angles in aligned frame of reference (initial guess)
+R = np.zeros((point_count, 3 * reading_count, 3 * reading_count)) #Reciprocal of ESDs matrix
+W = np.zeros((point_count, 3 * reading_count, 3 * reading_count)) #Weight matrix
+
+LSQ_points = np.zeros((point_count, 3))
+
+#Graphing
+
+ellipsoid_res = 10 #Resolution of error ellipsoids
+ellipsoid_scale_factor = 100
 
 def kabsch_rotated_points(input_points):
 
@@ -124,24 +136,64 @@ def least_squares_adjustment_setup():
         mean_ref_points = np.subtract(np.tile(means[n], (reading_count,1)), base_points)
         
         for reading in range(reading_count):
-            az, el, r = cart2sph(ref_points[reading, 0], ref_points[reading, 1], ref_points[reading, 2])
-            m[n, 3*reading, 0] = az
-            m[n, 3*reading+1, 0] = el
-            m[n, 3*reading+2, 0] = r
+            az_m, el_m, r_m = cart2sph(ref_points[reading, 0], ref_points[reading, 1], ref_points[reading, 2])
+            m[n, 3*reading, 0] = az_m
+            m[n, 3*reading+1, 0] = el_m
+            m[n, 3*reading+2, 0] = r_m
 
-            az, el, r = cart2sph(mean_ref_points[reading, 0], mean_ref_points[reading, 1], mean_ref_points[reading, 2])
-            d[n, 3*reading, 0] = az
-            d[n, 3*reading+1, 0] = el
-            d[n, 3*reading+2, 0] = r
+            az_d, el_d, r_d = cart2sph(mean_ref_points[reading, 0], mean_ref_points[reading, 1], mean_ref_points[reading, 2])
+            d[n, 3*reading, 0] = az_d
+            d[n, 3*reading+1, 0] = el_d
+            d[n, 3*reading+2, 0] = r_d
+
+            A[n, 3*reading, :] = [-np.sin(el_m)/r_m, np.cos(az_m)/r_m, 0]
+            A[n, 3*reading+1, :] = [-np.cos(az_m)*np.sin(el_m)/r_m, np.sin(az_m)*np.sin(el_m)/r_m, np.cos(el_m)/r_m]
+            A[n, 3*reading+2, :] = [np.cos(az_m)*np.cos(el_m), np.sin(az_m)*np.cos(el_m), np.sin(el_m)]
+
+
+        np.fill_diagonal(R[n, :, :], np.tile(np.array([1/ESDangle, 1/ESDangle, 1/ESDdist]), (1, reading_count)))
 
     k = np.subtract(m,d)
          
 
 def least_squares_adjustment():
     least_squares_adjustment_setup()
+
+    for n in range(point_count):
+        W[n,:,:] = np.matmul(R[n,:,:],R[n,:,:])
+
+        x = np.linalg.inv((A[n,:,:].T).dot(W[n,:,:]).dot(A[n,:,:])).dot(A[n,:,:].T).dot(W[n,:,:]).dot(k[n,:,:])
+
+        LSQ_points[n] = means[n] + x.T
+
+        sigma_v = np.sqrt( (k[n,:,:].T.dot(W[n,:,:]).dot(k[n,:,:])) /(reading_count * 3 - 3))
+
+        var_x = np.linalg.inv((A[n,:,:].T).dot(W[n,:,:]).dot(A[n,:,:])) * sigma_v ** 2
+
+        w, v = np.linalg.eig(var_x)
+            
+        sds = np.sqrt(w)
+
+        plot_ellispoid(LSQ_points[n], sds, v)
         
-fig = plt.figure()
-ax = fig.gca(projection='3d')
+def plot_ellispoid(origin, w, v):
+    
+    U = np.linspace(0, 2 * np.pi, ellipsoid_res)
+    V = np.linspace(0, np.pi, ellipsoid_res)
+    
+    x = ellipsoid_scale_factor * w[0] * np.outer(np.cos(U), np.sin(V))
+    y = ellipsoid_scale_factor * w[1] * np.outer(np.sin(U), np.sin(V))
+    z = ellipsoid_scale_factor * w[2] * np.outer(np.ones(np.size(U)), np.cos(V))
+    
+    x_dash = x * v[0,0] + y * v[0,1] + z * v[0,2] + np.tile(origin[0], (ellipsoid_res, ellipsoid_res))
+    y_dash = x * v[1,0] + y * v[1,1] + z * v[1,2] + np.tile(origin[1], (ellipsoid_res, ellipsoid_res))
+    z_dash = x * v[2,0] + y * v[2,1] + z * v[2,2] + np.tile(origin[2], (ellipsoid_res, ellipsoid_res))
+
+    #np.tile(origin[0], (ellipsoid_res, ellipsoid_res))
+    
+    # Plot the surface
+    ax.plot_surface(x_dash, y_dash, z_dash, color='b')
+
 
 i = 0 #Element in set of points
 j = 0 #Which set of points we are on
@@ -182,8 +234,11 @@ base_points = np.subtract(np.dot(base_points, r.T), np.tile(np.array([[0,0,h]]),
 
 means = mean()
 
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
 least_squares_adjustment()
-ax.scatter(means[:,0], means[:,1], means[:,2], color='red', label='mean points')  
+ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='LSQ points') 
 ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
 ax.scatter(base_points[:,0], base_points[:,1], base_points[:,2], color='green', label='base locations')
 
