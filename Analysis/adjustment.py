@@ -1,9 +1,14 @@
+#!/usr/bin/python
+
 import csv
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import pylab
+from modules.transformation import *
+from modules.graphing import *
+from modules.config import *
 
 spool_radius = 37.5e-3
 spool_offset = 0.281
@@ -18,20 +23,6 @@ file_reader = csv.reader(read_file)
 lines = len(list(file_reader))
 point_count = int(lines / reading_count)-1
 
-def sph2cart(az, el, r):
-    rcos_theta = r * np.cos(el)
-    x = rcos_theta * np.cos(az)
-    y = rcos_theta * np.sin(az)
-    z = r * np.sin(el)
-    return x, y, z
-
-def cart2sph(x, y, z):
-    hxy = np.hypot(x, y)
-    r = np.hypot(hxy, z)
-    el = np.arctan2(z, hxy)
-    az = np.arctan2(y, x)
-    return az, el, r
-
 aligned_points = np.zeros((point_count, 3))
 current_points = np.zeros((point_count, 3))
 collated_points = np.zeros((point_count, reading_count, 3))
@@ -42,7 +33,7 @@ pressure_points = np.zeros((reading_count, 3))
 
 depths = np.zeros((reading_count))
 
-ESDangle = np.deg2rad(0.1*5)
+ESDangle = sensor_error_sd #Estimate of our standard deviation in sensors
 ESDdist = ESDangle * spool_radius
 
 #Least squares adjustment
@@ -53,12 +44,9 @@ d = np.zeros((point_count, 3 * reading_count, 1)) #Mean distance and angles in a
 R = np.zeros((point_count, 3 * reading_count, 3 * reading_count)) #Reciprocal of ESDs matrix
 W = np.zeros((point_count, 3 * reading_count, 3 * reading_count)) #Weight matrix
 
+sigma_v = np.zeros(point_count)
+
 LSQ_points = np.zeros((point_count, 3))
-
-#Graphing
-
-ellipsoid_res = 10 #Resolution of error ellipsoids
-ellipsoid_scale_factor = 100
 
 def kabsch_rotated_points(input_points):
 
@@ -85,14 +73,6 @@ def kabsch_rotated_points(input_points):
     else:
         return np.subtract(input_points, np.tile(input_centroid, (point_count, 1))), np.subtract(pressure_offset, input_centroid), -input_centroid
 
-def rotation_matrix_from_vectors(v1, v2): #Rotation matrix from v1 to v2
-    a, b = (v1 / np.linalg.norm(v1)).reshape(3), (v2 / np.linalg.norm(v2)).reshape(3)
-    v = np.cross(a, b)
-    c = np.dot(a, b)
-    s = np.linalg.norm(v)
-    kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
-    rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
-    return rotation_matrix
         
 def find_water_surface_transformation():
     pressure_centroid = np.mean(pressure_points, axis=0)
@@ -129,7 +109,7 @@ def mean():
 
     return means
 
-def least_squares_adjustment_setup():
+def least_squares_adjustment_setup(): #Set up the matrixes for least squares adjustment
     global k
     for n in range(point_count):
         ref_points = np.subtract(collated_points[n,:,:], base_points)
@@ -166,33 +146,15 @@ def least_squares_adjustment():
 
         LSQ_points[n] = means[n] + x.T
 
-        sigma_v = np.sqrt( (k[n,:,:].T.dot(W[n,:,:]).dot(k[n,:,:])) /(reading_count * 3 - 3))
+        sigma_v[n] = np.sqrt( (k[n,:,:].T.dot(W[n,:,:]).dot(k[n,:,:])) /(reading_count * 3 - 3))
 
-        var_x = np.linalg.inv((A[n,:,:].T).dot(W[n,:,:]).dot(A[n,:,:])) * sigma_v ** 2
+        var_x = np.linalg.inv((A[n,:,:].T).dot(W[n,:,:]).dot(A[n,:,:])) * sigma_v[n] ** 2
 
         w, v = np.linalg.eig(var_x)
             
         sds = np.sqrt(w)
-
-        plot_ellispoid(LSQ_points[n], sds, v)
         
-def plot_ellispoid(origin, w, v):
-    
-    U = np.linspace(0, 2 * np.pi, ellipsoid_res)
-    V = np.linspace(0, np.pi, ellipsoid_res)
-    
-    x = ellipsoid_scale_factor * w[0] * np.outer(np.cos(U), np.sin(V))
-    y = ellipsoid_scale_factor * w[1] * np.outer(np.sin(U), np.sin(V))
-    z = ellipsoid_scale_factor * w[2] * np.outer(np.ones(np.size(U)), np.cos(V))
-    
-    x_dash = x * v[0,0] + y * v[0,1] + z * v[0,2] + np.tile(origin[0], (ellipsoid_res, ellipsoid_res))
-    y_dash = x * v[1,0] + y * v[1,1] + z * v[1,2] + np.tile(origin[1], (ellipsoid_res, ellipsoid_res))
-    z_dash = x * v[2,0] + y * v[2,1] + z * v[2,2] + np.tile(origin[2], (ellipsoid_res, ellipsoid_res))
-
-    #np.tile(origin[0], (ellipsoid_res, ellipsoid_res))
-    
-    # Plot the surface
-    ax.plot_surface(x_dash, y_dash, z_dash, color='b')
+        plot_ellispoid(LSQ_points[n], sds, v)
 
 
 i = 0 #Element in set of points
@@ -237,7 +199,11 @@ means = mean()
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
-least_squares_adjustment()
+while (not np.isclose(np.mean(sigma_v),1, atol=1e-15)): #Iterate until we have sensible standard deviation
+    least_squares_adjustment()
+    ESDangle *= np.mean(sigma_v)
+    ESDdist = ESDangle * spool_radius
+    
 ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='LSQ points') 
 ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
 ax.scatter(base_points[:,0], base_points[:,1], base_points[:,2], color='green', label='base locations')

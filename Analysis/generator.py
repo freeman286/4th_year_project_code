@@ -5,11 +5,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import pylab
 from scipy.spatial.transform import Rotation as R
-
-spool_radius = 37.5e-3
-sensor_error_sd = np.deg2rad(0.1)
-pressure_error = 0.16e-3
-spool_offset = 0.281
+from modules.config import *
 
 read_path = os.getcwd() + '/points/test.csv'
 write_path = os.getcwd() + '/angles/test.csv'
@@ -34,8 +30,6 @@ base_rotations = np.deg2rad([
     [135 , -3, -5],
     [150 , 5, 8]
 ]) #Rotation about z, y and z axis according to the right hand rule (Euler angles)
-
-pressure_offset = [0.100, 0.100, -0.200]
 
 def cart2sph(x, y, z, base_rotation, base_location):
 
@@ -67,9 +61,9 @@ for reading in range(reading_count):
 
         az, el, r, d = cart2sph(x,y,z, base_rotations[reading], base_locations[reading])
 
-        coords = np.degrees(np.add([az, el, (r-spool_offset)/(spool_radius)], np.random.normal(0, sensor_error_sd, size=(1,3))))[0]
+        coords = np.degrees(np.add([az, el, (r-spool_offset)/(spool_radius)], np.multiply([1, 1, spool_radius], np.random.normal(0, sensor_error_sd, size=(1,3)))))[0]
         
-        write_file.write(', '.join(map('{0:.2f}'.format, coords)) + ', {0:.4f}'.format(d + spool_radius * np.random.normal(0, sensor_error_sd)) + '\n')
+        write_file.write(', '.join(map('{0:.2f}'.format, coords)) + ', {0:.4f}'.format(d + np.random.normal(0, pressure_error_sd)) + '\n')
         
         if (reading == 0):
             ax.scatter(points[0], points[1], points[2], color='red')
