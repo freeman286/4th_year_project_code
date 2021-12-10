@@ -126,9 +126,9 @@ def least_squares_adjustment_setup(): #Set up the matrixes for least squares adj
             d[n, 3*reading+1, 0] = el_d
             d[n, 3*reading+2, 0] = r_d
 
-            A[n, 3*reading, :] = [-np.sin(el_m)/r_m, np.cos(az_m)/r_m, 0]
-            A[n, 3*reading+1, :] = [-np.cos(az_m)*np.sin(el_m)/r_m, np.sin(az_m)*np.sin(el_m)/r_m, np.cos(el_m)/r_m]
-            A[n, 3*reading+2, :] = [np.cos(az_m)*np.cos(el_m), np.sin(az_m)*np.cos(el_m), np.sin(el_m)]
+            A[n, 3*reading, :] = [-np.cos(az_m)*np.sin(el_m)/r_m, np.cos(az_m)/r_m, -np.sin(az_m)*np.sin(el_m)/r_m]
+            A[n, 3*reading+1, :] = [-np.sin(el_m)/r_m, 0, np.cos(el_m)/r_m]
+            A[n, 3*reading+2, :] = [np.cos(az_m)*np.cos(el_m), np.sin(az_m), np.cos(az_m)*np.sin(el_m)]
 
 
         np.fill_diagonal(R[n, :, :], np.tile(np.array([1/ESDangle, 1/ESDangle, 1/ESDdist]), (1, reading_count)))

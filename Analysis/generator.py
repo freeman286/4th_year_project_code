@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import pylab
 from scipy.spatial.transform import Rotation as R
 from modules.config import *
+from modules.transformation import *
 
 read_path = os.getcwd() + '/points/test.csv'
 write_path = os.getcwd() + '/angles/test.csv'
@@ -31,7 +32,7 @@ base_rotations = np.deg2rad([
     [150 , 5, 8]
 ]) #Rotation about z, y and z axis according to the right hand rule (Euler angles)
 
-def cart2sph(x, y, z, base_rotation, base_location):
+def mod_cart2sph(x, y, z, base_rotation, base_location):
 
     #Some matrix rotations to get us in the right frame of reference
     rot = R.from_euler('zyx', -base_rotation)
@@ -40,10 +41,7 @@ def cart2sph(x, y, z, base_rotation, base_location):
     
     d = water_level - (np.add(np.array(base_location).T, np.matmul(np.linalg.inv(rot.as_matrix()), np.array(pressure_offset).T)))[2]
     
-    hxy = np.hypot(x_dash, y_dash)
-    r = np.hypot(hxy, z_dash)
-    el = np.arctan2(z_dash, hxy)
-    az = np.arctan2(y_dash, x_dash)
+    az, el, r = cart2sph(x_dash, y_dash, z_dash)
     return az, el, r, d
 
 file_reader = csv.reader(read_file)
@@ -59,7 +57,7 @@ for reading in range(reading_count):
         
         x,y,z = np.subtract(points, np.array(base_locations[reading]))
 
-        az, el, r, d = cart2sph(x,y,z, base_rotations[reading], base_locations[reading])
+        az, el, r, d = mod_cart2sph(x,y,z, base_rotations[reading], base_locations[reading])
 
         coords = np.degrees(np.add([az, el, (r-spool_offset)/(spool_radius)], np.multiply([1, 1, spool_radius], np.random.normal(0, sensor_error_sd, size=(1,3)))))[0]
         
