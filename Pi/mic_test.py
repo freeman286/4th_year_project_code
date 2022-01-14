@@ -1,16 +1,26 @@
 import smbus
 import time
 
+def twos_comp(val, bits):
+    """compute the 2's complement of int value val"""
+    if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
+        val = val - (1 << bits)        # compute negative value
+    return val  
+
 # Get I2C bus
 bus = smbus.SMBus(1)
 
-bus.write_word_data(0x40, 0x40, 0x08) # Start command
-
-bus.write_word_data(0x40, 0x40, 0x44) # Set register 0 to 1
 
 while (True) :
-    data = bus.read_byte(0x40)
+    bus.write_byte(0x40, 0x10)
+    
+    data1 = bus.read_byte(0x40)
+    data2 = bus.read_byte(0x40)
+    data3 = bus.read_byte(0x40)
 
-    volts = data / 4096000
-
-    print(volts)
+    unsigned_value = int.from_bytes([data1,data2,data3], byteorder='big')
+    signed_value = twos_comp(unsigned_value, 24)
+    
+    print(signed_value)
+    
+    time.sleep(1/2000)
