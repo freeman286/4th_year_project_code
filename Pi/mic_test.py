@@ -2,6 +2,7 @@ import smbus
 import time
 import numpy as np
 from timeit import default_timer as timer
+import matplotlib.pyplot as plt
 
 def twos_comp(val, bits):
     """compute the 2's complement of int value val"""
@@ -31,8 +32,15 @@ while (True) :
     
     buffer[i] = signed_value
     
-    i = (i + 1) % 2000
+    i = (i + 1)
     
     time.sleep(max(0, 1/2000 - (timer() - t)))
     
     t = timer()
+
+T = 1/2000
+N = 2000
+freq = np.linspace(-1.0/(2.0*T), 1.0/(2.0*T), N)
+fft = np.fft.fft(np.multiply(buffer, np.hamming(N)))
+plt.plot(freq, abs(fft))
+plt.show()
