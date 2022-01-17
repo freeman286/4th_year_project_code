@@ -1,6 +1,7 @@
 import smbus
 import time
 import numpy as np
+from timeit import default_timer as timer
 
 def twos_comp(val, bits):
     """compute the 2's complement of int value val"""
@@ -18,16 +19,20 @@ bus.write_i2c_block_data(0x40, 0x44, [0xD8]) # Set Register
 
 bus.write_byte(0x40, 0x08) # START/SYNC
 
-while (True) :
-    bus.write_byte(0x40, 0x10)
-    
-    data1 = bus.read_byte(0x40)
-    data2 = bus.read_byte(0x40)
-    data3 = bus.read_byte(0x40)
+t = timer()
 
-    unsigned_value = int.from_bytes([data1,data2,data3], byteorder='big')
+buffer = [0] * 2000 # A buffer of previous values
+i = 0 # Index of buffer to write to
+
+while (True) :        
+    unsigned_value = int.from_bytes(bus.read_i2c_block_data(0x40,0x10,3), byteorder='big')
+    
     signed_value = twos_comp(unsigned_value, 24)
-            
-            
-    print("x"*int(abs(signed_value)/10))
-    time.sleep(1/2000)
+    
+    buffer[i] = signed_value
+    
+    i = (i + 1) % 2000
+    
+    time.sleep(max(0, 1/2000 - (timer() - t)))
+    
+    t = timer()
