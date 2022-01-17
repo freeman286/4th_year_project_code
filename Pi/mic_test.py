@@ -11,6 +11,13 @@ def twos_comp(val, bits):
 # Get I2C bus
 bus = smbus.SMBus(1)
 
+bus.write_byte(0x40, 0x06) # Reset
+bus.write_byte(0x40, 0x08) # START/SYNC
+
+bus.write_i2c_block_data(0x40, 0x44, [0xD8]) # Set Register
+
+bus.write_byte(0x40, 0x08) # START/SYNC
+
 while (True) :
     bus.write_byte(0x40, 0x10)
     
