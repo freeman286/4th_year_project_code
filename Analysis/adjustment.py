@@ -28,7 +28,6 @@ current_points = np.zeros((point_count, 3))
 collated_points = np.zeros((point_count, reading_count, 3))
 
 base_points = np.zeros((reading_count, 3))
-pressure_offset = [0.100, 0.100, -0.200]
 pressure_points = np.zeros((reading_count, 3))
 
 depths = np.zeros((reading_count))
@@ -51,12 +50,12 @@ LSQ_points = np.zeros((point_count, 3))
 def kabsch_rotated_points(input_points):
 
     input_centroid = np.mean(input_points, axis=0)
-    
+
     if (aligned_points.any()):
         repeat_factor = int(aligned_points.shape[0]/input_points.shape[0])
 
         mapping_points = np.subtract( np.tile(input_points, (repeat_factor, 1)),  np.tile(input_centroid, (repeat_factor * point_count, 1)) ) #Get the centroid at the origin
-        
+
         h = mapping_points.T @ aligned_points
         u, s, vt = np.linalg.svd(h)
         v = vt.T
@@ -73,11 +72,11 @@ def kabsch_rotated_points(input_points):
     else:
         return np.subtract(input_points, np.tile(input_centroid, (point_count, 1))), np.subtract(pressure_offset, input_centroid), -input_centroid
 
-        
+
 def find_water_surface_transformation():
     pressure_centroid = np.mean(pressure_points, axis=0)
     normalised_pressure_points = np.subtract(pressure_points,  np.tile(pressure_centroid, (reading_count, 1)) )
-    
+
     depth_mean = np.mean(depths)
     normalised_depths = depths - depth_mean
 
@@ -86,7 +85,7 @@ def find_water_surface_transformation():
         [np.sum(normalised_pressure_points[:,0]*normalised_pressure_points[:,1]), np.sum(normalised_pressure_points[:,1]**2), np.sum(normalised_pressure_points[:,1]*normalised_pressure_points[:,2])],
         [np.sum(normalised_pressure_points[:,0]*normalised_pressure_points[:,2]), np.sum(normalised_pressure_points[:,1]*normalised_pressure_points[:,2]), np.sum(normalised_pressure_points[:,2]**2)],
     ])
-    
+
     B = -np.array([[
         np.sum(normalised_pressure_points[:,0] * normalised_depths),
         np.sum(normalised_pressure_points[:,1] * normalised_depths),
@@ -114,7 +113,7 @@ def least_squares_adjustment_setup(): #Set up the matrixes for least squares adj
     for n in range(point_count):
         ref_points = np.subtract(collated_points[n,:,:], base_points)
         mean_ref_points = np.subtract(np.tile(means[n], (reading_count,1)), base_points)
-        
+
         for reading in range(reading_count):
             az_m, el_m, r_m = cart2sph(ref_points[reading, 0], ref_points[reading, 1], ref_points[reading, 2])
             m[n, 3*reading, 0] = az_m
@@ -134,7 +133,7 @@ def least_squares_adjustment_setup(): #Set up the matrixes for least squares adj
         np.fill_diagonal(R[n, :, :], np.tile(np.array([1/ESDangle, 1/ESDangle, 1/ESDdist]), (1, reading_count)))
 
     k = np.subtract(m,d)
-         
+
 
 def least_squares_adjustment():
     least_squares_adjustment_setup()
@@ -151,9 +150,9 @@ def least_squares_adjustment():
         var_x = np.linalg.inv((A[n,:,:].T).dot(W[n,:,:]).dot(A[n,:,:])) * sigma_v[n] ** 2
 
         w, v = np.linalg.eig(var_x)
-            
+
         sds = np.sqrt(w)
-        
+
         plot_ellispoid(LSQ_points[n], sds, v)
 
 
@@ -162,7 +161,7 @@ j = 0 #Which set of points we are on
 read_file.seek(0)
 for line in file_reader:
     angles = np.asarray(line, dtype=np.float64)
-    
+
     if (angles.size == 0):
         continue #Skip if we have an empty line
 
@@ -180,7 +179,7 @@ for line in file_reader:
             aligned_points = new_points
         else:
             aligned_points = np.concatenate((aligned_points, new_points), axis=0)
-            
+
         depths[j] = depths[j] / point_count
         j += 1
         i = 0
@@ -203,16 +202,14 @@ while (not np.isclose(np.mean(sigma_v),1, atol=1e-15)): #Iterate until we have s
     least_squares_adjustment()
     ESDangle *= np.mean(sigma_v)
     ESDdist = ESDangle * spool_radius
-    
-ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='LSQ points') 
+
+ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='LSQ points')
 ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
 ax.scatter(base_points[:,0], base_points[:,1], base_points[:,2], color='green', label='base locations')
 
-    
+
 ax.set_xlim3d(-2, 2)
 ax.set_ylim3d(-2, 2)
 ax.set_zlim3d(-2, 2)
 ax.legend()
 pylab.show()
-
-
