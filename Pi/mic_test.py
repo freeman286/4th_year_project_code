@@ -1,16 +1,46 @@
 import smbus
 import time
+import numpy as np
+from timeit import default_timer as timer
+import matplotlib.pyplot as plt
+
+def twos_comp(val, bits):
+    """compute the 2's complement of int value val"""
+    if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
+        val = val - (1 << bits)        # compute negative value
+    return val  
 
 # Get I2C bus
 bus = smbus.SMBus(1)
 
-bus.write_word_data(0x40, 0x40, 0x08) # Start command
+bus.write_byte(0x40, 0x06) # Reset
+bus.write_byte(0x40, 0x08) # START/SYNC
 
-bus.write_word_data(0x40, 0x40, 0x44) # Set register 0 to 1
+bus.write_i2c_block_data(0x40, 0x44, [0xD8]) # Set Register
 
-while (True) :
-    data = bus.read_byte(0x40)
+bus.write_byte(0x40, 0x08) # START/SYNC
 
-    volts = data / 4096000
+t = timer()
 
-    print(volts)
+buffer = [0] * 2000 # A buffer of previous values
+i = 0 # Index of buffer to write to
+
+while (True) :        
+    unsigned_value = int.from_bytes(bus.read_i2c_block_data(0x40,0x10,3), byteorder='big')
+    
+    signed_value = twos_comp(unsigned_value, 24)
+    
+    buffer[i] = signed_value
+    
+    i = (i + 1)
+    
+    time.sleep(max(0, 1/2000 - (timer() - t)))
+    
+    t = timer()
+
+T = 1/2000
+N = 2000
+freq = np.linspace(-1.0/(2.0*T), 1.0/(2.0*T), N)
+fft = np.fft.fft(np.multiply(buffer, np.hamming(N)))
+plt.plot(freq, abs(fft))
+plt.show()

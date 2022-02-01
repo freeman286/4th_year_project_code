@@ -15,7 +15,7 @@ if not sensor.init():
 # Spew readings
 while True:
     if sensor.read():
-        print("MSL Relative Altitude: %.2f m Pressure: %.2f atm") % (sensor.altitude(), sensor.pressure(ms5837.UNITS_atm))
+        print("MSL Relative Altitude: %.2f m Pressure: %.2f atm" % (sensor.altitude(), sensor.pressure(ms5837.UNITS_atm)))
     else:
         print("Sensor read failed!")
         exit(1)
