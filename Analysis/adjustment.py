@@ -10,9 +10,6 @@ from modules.transformation import *
 from modules.graphing import *
 from modules.config import *
 
-spool_radius = 37.5e-3
-spool_offset = 0.281
-
 reading_count = 4
 
 read_path = os.getcwd() + '/angles/test.csv'
