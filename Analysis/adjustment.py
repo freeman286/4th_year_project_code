@@ -44,6 +44,8 @@ sigma_v = np.zeros(point_count)
 
 LSQ_points = np.zeros((point_count, 3))
 
+depth_sd = 0
+
 def kabsch_rotated_points(input_points):
 
     input_centroid = np.mean(input_points, axis=0)
@@ -96,6 +98,9 @@ def find_water_surface_transformation():
     r = rotation_matrix_from_vectors(normal_vector, np.array([[0,0,1]]).T)
 
     return r, depth_mean + pressure_centroid[2]
+
+def find_water_surface_error():
+    return np.sum(np.square(np.add(pressure_points[:,2], depths)))/reading_count
 
 def mean():
     means = np.zeros((point_count, 3))
@@ -189,6 +194,8 @@ r, h = find_water_surface_transformation()
 aligned_points = np.subtract(np.dot(aligned_points, r.T), np.tile(np.array([[0,0,h]]), (reading_count * point_count, 1)))
 pressure_points = np.subtract(np.dot(pressure_points, r.T), np.tile(np.array([[0,0,h]]), (reading_count, 1)))
 base_points = np.subtract(np.dot(base_points, r.T), np.tile(np.array([[0,0,h]]), (reading_count, 1)))
+
+depth_sd = np.sqrt(find_water_surface_error())
 
 means = mean()
 
