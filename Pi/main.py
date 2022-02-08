@@ -11,6 +11,8 @@ import numpy as np
 from timeit import default_timer as timer
 from modules.sensors import *
 
+print("Waiting for boot")
+
 time.sleep(60)
 
 write_path = os.getcwd() + '/data/data'+datetime.now().strftime("%Y.%m.%d.%H.%M.%S")+'.csv'
