@@ -11,9 +11,20 @@ from timeit import default_timer as timer
 
 i = 0
 
+#buffer parameters
 N = 1000
-buffer1 = np.zeros(N)
-buffer2 = np.zeros(N)
+buffer = np.zeros(N)
+
+#fft parameters
+T = 1/15000
+freq = np.linspace(-1.0/(2.0*T), 1.0/(2.0*T), N)
+scan_freq = 3500
+scan_index = np.abs(freq-scan_freq).argmin()
+
+#detection parameters
+threshold = 30
+alpha = 0.4
+detection_level = -1000 #this starts very low while we wait for erroneous data to die down
 
 
 #try:
@@ -25,21 +36,17 @@ t = timer()
 ADC.ADS1256_StartContinuousADC()
 while(1):
     ADC_value = ADC.ADS1256_Read_ADC_Data_Continuous()
-        #print(ADC_value)
-    x = timer()-t
-    avgX=(avgX+x)/2
     t = timer()
     i=(i+1)%N
-    buffer1[i] = ADC_value
+    buffer[i] = ADC_value
     
     if (i==N-1):
-        buffer2 = buffer1
-    
-    
-T = 1/15000
-freq = np.linspace(-1.0/(2.0*T), 1.0/(2.0*T), N)
-fft = np.fft.fft(np.multiply(buffer2-np.mean(buffer2), np.hamming(N)))/N
-plt.plot(freq, abs(fft))
-plt.show()
+        fft = np.fft.fft(np.multiply(buffer-np.mean(buffer), np.hamming(N)))/N
+        print(detection_level)
+        
+        detection_level = alpha*abs(fft[scan_index])+(1-alpha)*detection_level
+            
+        if (detection_level>threshold):
+            print("detected")
 
 
