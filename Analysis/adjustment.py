@@ -12,8 +12,10 @@ from modules.config import *
 
 reading_count = 4
 
-read_path = os.getcwd() + '/angles/test.csv'
+read_path = os.getcwd() + '/angles/grid_test.csv'
 read_file = open(read_path, "r")
+
+write_path = os.getcwd() + '/results/grid_test.csv'
 
 file_reader = csv.reader(read_file)
 
@@ -206,6 +208,8 @@ while (not np.isclose(np.mean(sigma_v),1, atol=1e-15)): #Iterate until we have s
     least_squares_adjustment()
     ESDangle *= np.mean(sigma_v)
     ESDdist = ESDangle * spool_radius
+
+np.savetxt(write_path, LSQ_points, fmt='%f', delimiter=',')
 
 ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='LSQ points')
 ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
