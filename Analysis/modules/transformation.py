@@ -22,3 +22,7 @@ def rotation_matrix_from_vectors(v1, v2): #Rotation matrix from v1 to v2
     kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
     rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
     return rotation_matrix
+
+def closest_point(point, points): #Return the index of the closest point
+    dist = np.linalg.norm(point-points, axis=1)
+    return np.argmin(dist)

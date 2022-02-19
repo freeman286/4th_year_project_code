@@ -2,9 +2,10 @@ import csv
 import os
 import numpy as np
 from numpy import genfromtxt
-
-rows = 5
-columns = 4
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import pylab
+from modules.transformation import *
 
 original_path = os.getcwd() + '/points/grid_test.csv'
 original_points = genfromtxt(original_path, delimiter=',')
@@ -12,17 +13,37 @@ original_points = genfromtxt(original_path, delimiter=',')
 new_path = os.getcwd() + '/results/grid_test.csv'
 new_points = genfromtxt(new_path, delimiter=',')
 
-original_horizontal_distances = np.zeros((columns-1, rows))
-original_vertical_distances = np.zeros((columns, rows-1))
-new_horizontal_distances = np.zeros((columns-1, rows))
-new_vertical_distances = np.zeros((columns, rows-1))
+# Fit a plane through the new points to map them back onto the original points
+transpose = np.transpose(new_points)
+new_centroid = np.mean(new_points, axis=0, keepdims=True)
+old_centroid = np.mean(original_points, axis=0, keepdims=True)
+svd = np.linalg.svd(transpose -  np.transpose(new_centroid))
 
-for i, row in enumerate(original_horizontal_distances):
-    for j, element in enumerate(row):
-        original_horizontal_distances[i,j] = np.linalg.norm(original_points[i+j*columns]-original_points[i+j*columns+1])
-        new_horizontal_distances[i,j] = np.linalg.norm(new_points[i+j*columns]-new_points[i+j*columns+1])
+# Extract the left singular vectors
+left = svd[0]
+normal = left[:, -1]
 
-for i, row in enumerate(original_vertical_distances):
-    for j, element in enumerate(row):
-        original_vertical_distances[i,j] = np.linalg.norm(original_points[i*columns+j]-original_points[(i+1)*columns+j])
-        new_vertical_distances[i,j] = np.linalg.norm(new_points[i*columns+j]-new_points[(i+1)*columns+j])
+r = rotation_matrix_from_vectors(normal, [1, 0, 0])
+
+aligned_points = np.transpose(np.matmul(r, np.transpose(new_points - new_centroid)))+old_centroid
+sorted_points = np.zeros(np.shape(original_points))
+
+# Sometimes our aligned points come out in the wrong order so we sort them back onto the original points
+for point in aligned_points:
+    sorted_points[closest_point(point, original_points),:] = point
+
+error = np.linalg.norm(original_points-sorted_points,axis=1)
+
+sd = np.std(error) # Standard deviation of the error
+
+#fig = plt.figure()
+#ax = fig.add_subplot(111, projection='3d')
+
+#ax.scatter(sorted_points[:,0], sorted_points[:,1], sorted_points[:,2], color='purple', label='aligned points')
+#ax.scatter(original_points[:,0], original_points[:,1], original_points[:,2], color='blue', label='original points')
+
+#ax.set_xlim3d(-1, 1)
+#ax.set_ylim3d(-1, 1)
+#ax.set_zlim3d(-1, 1)
+#ax.legend()
+#pylab.show()
