@@ -14,10 +14,9 @@ new_path = os.getcwd() + '/results/grid_test.csv'
 new_points = genfromtxt(new_path, delimiter=',')
 
 # Fit a plane through the new points to map them back onto the original points
-transpose = np.transpose(new_points)
 new_centroid = np.mean(new_points, axis=0, keepdims=True)
 old_centroid = np.mean(original_points, axis=0, keepdims=True)
-svd = np.linalg.svd(transpose -  np.transpose(new_centroid))
+svd = np.linalg.svd(np.transpose(new_points) -  np.transpose(new_centroid))
 
 # Extract the left singular vectors
 left = svd[0]
@@ -25,12 +24,19 @@ normal = left[:, -1]
 
 r = rotation_matrix_from_vectors(normal, [1, 0, 0])
 
-aligned_points = np.transpose(np.matmul(r, np.transpose(new_points - new_centroid)))+old_centroid
+# Align around centroids
+original_points = original_points - old_centroid
+aligned_points = np.transpose(np.matmul(r, np.transpose(new_points - new_centroid)))
+
 sorted_points = np.zeros(np.shape(original_points))
 
 # Sometimes our aligned points come out in the wrong order so we sort them back onto the original points
 for point in aligned_points:
     sorted_points[closest_point(point, original_points),:] = point
+
+# Correct for accidental rotations of the grid about the normal of the plane
+r = kabsch_rotation(sorted_points, original_points)
+sorted_points = np.transpose(np.matmul(r, np.transpose(sorted_points)))
 
 error = np.linalg.norm(original_points-sorted_points,axis=1)
 

@@ -57,14 +57,7 @@ def kabsch_rotated_points(input_points):
 
         mapping_points = np.subtract( np.tile(input_points, (repeat_factor, 1)),  np.tile(input_centroid, (repeat_factor * point_count, 1)) ) #Get the centroid at the origin
 
-        h = mapping_points.T @ aligned_points
-        u, s, vt = np.linalg.svd(h)
-        v = vt.T
-
-        d = np.linalg.det(v @ u.T)
-        e = np.array([[1, 0, 0], [0, 1, 0], [0, 0, d]])
-
-        r = v @ e @ u.T
+        r = kabsch_rotation(mapping_points, aligned_points)
 
         pressure_point = np.matmul(r, np.subtract(pressure_offset, input_centroid))
 

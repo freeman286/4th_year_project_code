@@ -26,3 +26,13 @@ def rotation_matrix_from_vectors(v1, v2): #Rotation matrix from v1 to v2
 def closest_point(point, points): #Return the index of the closest point
     dist = np.linalg.norm(point-points, axis=1)
     return np.argmin(dist)
+
+def kabsch_rotation(mapping_points, aligned_points):
+    h = mapping_points.T @ aligned_points
+    u, s, vt = np.linalg.svd(h)
+    v = vt.T
+
+    d = np.linalg.det(v @ u.T)
+    e = np.array([[1, 0, 0], [0, 1, 0], [0, 0, d]])
+
+    return v @ e @ u.T
