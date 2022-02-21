@@ -8,28 +8,32 @@ from scipy.spatial.transform import Rotation as R
 from modules.config import *
 from modules.transformation import *
 
-read_path = os.getcwd() + '/points/grid_test.csv'
-write_path = os.getcwd() + '/angles/grid_test.csv'
+read_path = os.getcwd() + '/points/grid_calibration.csv'
+write_path = os.getcwd() + '/angles/grid_calibration.csv'
 
 read_file = open(read_path, "r")
 write_file = open(write_path, "w")
 
-reading_count = 4
+reading_count = 6
 
 base_locations = np.array([
-    [0,0,-1],
-    [1,-1,0.5],
-    [2,1,-0.5],
-    [3,1,1]
+    [-1.5,-1,-1],
+    [-2,0,-1],
+    [-2.5,0.4,-1],
+    [-2.5,1.5,-1],
+    [-2,1.2,-1],
+    [-1.5,2.2,-1],
 ])
 
 water_level = 2
 
 base_rotations = np.deg2rad([
-    [45 , 15, 0],
-    [90 , -4, 3],
-    [135 , -3, -5],
-    [150 , 5, 8]
+    [-40 , 4, 0],
+    [-30 , -2, 3],
+    [-10 , -3, -5],
+    [10 , 5, 8],
+    [30 , -3, -5],
+    [60 , 5, 8]
 ]) #Rotation about z, y and z axis according to the right hand rule (Euler angles)
 
 def mod_cart2sph(x, y, z, base_rotation, base_location):
@@ -52,6 +56,8 @@ ax = fig.gca(projection='3d')
 for reading in range(reading_count):
     read_file.seek(0)
     ax.scatter(base_locations[reading][0], base_locations[reading][1],base_locations[reading][2], color='blue')
+    direction = np.matmul(R.from_euler('zyx', -base_rotations[reading]).as_matrix(), np.array([[1],[0],[0]]))
+    ax.quiver(base_locations[reading][0], base_locations[reading][1],base_locations[reading][2], direction[0], direction[1], direction[2])
     for line in file_reader:
         points = np.asarray(line, dtype=np.float64)
 

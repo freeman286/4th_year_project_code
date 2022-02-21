@@ -7,10 +7,10 @@ from mpl_toolkits.mplot3d import Axes3D
 import pylab
 from modules.transformation import *
 
-original_path = os.getcwd() + '/points/grid_test.csv'
+original_path = os.getcwd() + '/points/grid_calibration.csv'
 original_points = genfromtxt(original_path, delimiter=',')
 
-new_path = os.getcwd() + '/results/grid_test.csv'
+new_path = os.getcwd() + '/results/grid_calibration.csv'
 new_points = genfromtxt(new_path, delimiter=',')
 
 # Fit a plane through the new points to map them back onto the original points
@@ -42,14 +42,14 @@ error = np.linalg.norm(original_points-sorted_points,axis=1)
 
 sd = np.std(error) # Standard deviation of the error
 
-#fig = plt.figure()
-#ax = fig.add_subplot(111, projection='3d')
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
 
-#ax.scatter(sorted_points[:,0], sorted_points[:,1], sorted_points[:,2], color='purple', label='aligned points')
-#ax.scatter(original_points[:,0], original_points[:,1], original_points[:,2], color='blue', label='original points')
+ax.scatter(sorted_points[:,0], sorted_points[:,1], sorted_points[:,2], color='purple', label='aligned points')
+ax.scatter(original_points[:,0], original_points[:,1], original_points[:,2], color='blue', label='original points')
 
-#ax.set_xlim3d(-1, 1)
-#ax.set_ylim3d(-1, 1)
-#ax.set_zlim3d(-1, 1)
-#ax.legend()
-#pylab.show()
+ax.set_xlim3d(-1, 1)
+ax.set_ylim3d(-1, 1)
+ax.set_zlim3d(-1, 1)
+ax.legend()
+pylab.show()

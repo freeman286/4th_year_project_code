@@ -10,12 +10,12 @@ from modules.transformation import *
 from modules.graphing import *
 from modules.config import *
 
-reading_count = 4
+reading_count = 6
 
-read_path = os.getcwd() + '/angles/grid_test.csv'
+read_path = os.getcwd() + '/angles/grid_calibration.csv'
 read_file = open(read_path, "r")
 
-write_path = os.getcwd() + '/results/grid_test.csv'
+write_path = os.getcwd() + '/results/grid_calibration.csv'
 
 file_reader = csv.reader(read_file)
 
