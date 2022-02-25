@@ -10,7 +10,7 @@ from modules.transformation import *
 from modules.graphing import *
 from modules.config import *
 
-reading_count = 6
+reading_count = 5
 
 read_path = os.getcwd() + '/angles/data2022.02.24.17.02.08.csv'
 read_file = open(read_path, "r")
