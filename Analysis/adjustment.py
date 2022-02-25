@@ -12,15 +12,15 @@ from modules.config import *
 
 reading_count = 6
 
-read_path = os.getcwd() + '/angles/grid_calibration.csv'
+read_path = os.getcwd() + '/angles/data2022.02.24.17.02.08.csv'
 read_file = open(read_path, "r")
 
-write_path = os.getcwd() + '/results/grid_calibration.csv'
+write_path = os.getcwd() + '/results/data2022.02.24.17.02.08.csv'
 
 file_reader = csv.reader(read_file)
 
 lines = len(list(file_reader))
-point_count = int(lines / reading_count)-1
+point_count = round(lines / reading_count-1)
 
 aligned_points = np.zeros((point_count, 3))
 current_points = np.zeros((point_count, 3))
@@ -86,11 +86,14 @@ def find_water_surface_transformation():
         np.sum(normalised_pressure_points[:,2] * normalised_depths)
     ]]).T
 
-    normal_vector = np.matmul(np.linalg.inv(A), B)
+    if (np.all((B == 0))): #Check if we set up on a flat surface
+        r = np.identity(3)
+    else:
+        normal_vector = np.matmul(np.linalg.inv(A), B)
 
-    normal_vector = normal_vector / np.linalg.norm(normal_vector)
+        normal_vector = normal_vector / np.linalg.norm(normal_vector)
 
-    r = rotation_matrix_from_vectors(normal_vector, np.array([[0,0,1]]).T)
+        r = rotation_matrix_from_vectors(normal_vector, np.array([[0,0,1]]).T)
 
     return r, depth_mean + pressure_centroid[2]
 
@@ -157,7 +160,7 @@ i = 0 #Element in set of points
 j = 0 #Which set of points we are on
 read_file.seek(0)
 for line in file_reader:
-    angles = np.asarray(line, dtype=np.float64)
+    angles = np.asarray(line[0:4], dtype=np.float64)
 
     if (angles.size == 0):
         continue #Skip if we have an empty line

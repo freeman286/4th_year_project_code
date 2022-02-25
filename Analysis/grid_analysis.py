@@ -10,7 +10,7 @@ from modules.transformation import *
 original_path = os.getcwd() + '/points/grid_calibration.csv'
 original_points = genfromtxt(original_path, delimiter=',')
 
-new_path = os.getcwd() + '/results/grid_calibration.csv'
+new_path = os.getcwd() + '/results/data2022.02.24.17.02.08.csv'
 new_points = genfromtxt(new_path, delimiter=',')
 
 # Fit a plane through the new points to map them back onto the original points
