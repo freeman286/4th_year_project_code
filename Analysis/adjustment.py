@@ -138,12 +138,18 @@ def least_squares_adjustment_setup(): #Set up the matrixes for least squares adj
 def least_squares_adjustment():
     least_squares_adjustment_setup()
 
+    x_bar = np.array([0,0,0], dtype = float)
+
     for n in range(point_count):
         W[n,:,:] = np.matmul(R[n,:,:],R[n,:,:])
 
         x = np.linalg.inv((A[n,:,:].T).dot(W[n,:,:]).dot(A[n,:,:])).dot(A[n,:,:].T).dot(W[n,:,:]).dot(k[n,:,:])
 
+        x_bar = np.add(x_bar,x.T)
+        
         LSQ_points[n] = means[n] + x.T
+
+        means[n] = LSQ_points[n]
 
         sigma_v[n] = np.sqrt( (k[n,:,:].T.dot(W[n,:,:]).dot(k[n,:,:])) /(reading_count * 3 - 3))
 
@@ -155,6 +161,7 @@ def least_squares_adjustment():
 
         plot_ellispoid(LSQ_points[n], sds, v)
 
+    return x_bar/point_count
 
 i = 0 #Element in set of points
 j = 0 #Which set of points we are on
@@ -201,7 +208,9 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
 while (not np.isclose(np.mean(sigma_v),1, atol=1e-15)): #Iterate until we have sensible standard deviation
-    least_squares_adjustment()
+    x_bar = 1
+    while (np.linalg.norm(x_bar) > 1e-15):
+        x_bar = least_squares_adjustment()
     ESDangle *= np.mean(sigma_v)
     ESDdist = ESDangle * spool_radius
 
