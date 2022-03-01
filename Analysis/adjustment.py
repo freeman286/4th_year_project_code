@@ -42,6 +42,9 @@ d = np.zeros((point_count, 3 * reading_count, 1)) #Mean distance and angles in a
 R = np.zeros((point_count, 3 * reading_count, 3 * reading_count)) #Reciprocal of ESDs matrix
 W = np.zeros((point_count, 3 * reading_count, 3 * reading_count)) #Weight matrix
 
+sds = np.zeros((point_count, 3)) #Error ellipsoid size
+v = np.zeros((point_count, 3, 3)) #Error ellipsoid principal axis
+
 sigma_v = np.zeros(point_count)
 
 LSQ_points = np.zeros((point_count, 3))
@@ -146,7 +149,7 @@ def least_squares_adjustment():
         x = np.linalg.inv((A[n,:,:].T).dot(W[n,:,:]).dot(A[n,:,:])).dot(A[n,:,:].T).dot(W[n,:,:]).dot(k[n,:,:])
 
         x_bar = np.add(x_bar,x.T)
-        
+
         LSQ_points[n] = means[n] + x.T
 
         means[n] = LSQ_points[n]
@@ -155,11 +158,11 @@ def least_squares_adjustment():
 
         var_x = np.linalg.inv((A[n,:,:].T).dot(W[n,:,:]).dot(A[n,:,:])) * sigma_v[n] ** 2
 
-        w, v = np.linalg.eig(var_x)
+        w, u = np.linalg.eig(var_x)
 
-        sds = np.sqrt(w)
+        v[n,:,:] = u
 
-        plot_ellispoid(LSQ_points[n], sds, v)
+        sds[n] = np.sqrt(w)
 
     return x_bar/point_count
 
@@ -215,6 +218,9 @@ while (not np.isclose(np.mean(sigma_v),1, atol=1e-15)): #Iterate until we have s
     ESDdist = ESDangle * spool_radius
 
 np.savetxt(write_path, LSQ_points, fmt='%f', delimiter=',')
+
+for n in range(point_count):
+    plot_ellispoid(LSQ_points[n], sds[n], v[n])
 
 ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='LSQ points')
 ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
