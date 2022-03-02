@@ -1,7 +1,7 @@
 const int BUZZER = 3;
 
-const int CHIRP_START = 8000; // chirp start in Hz
-const int CHIRP_FINISH = 12000; // chirp finish in Hz
+const int CHIRP_START = 6000; // chirp start in Hz
+const int CHIRP_FINISH = 8000; // chirp finish in Hz
 
 
 const int buttonPin = 2;
