@@ -35,7 +35,7 @@ aligned_points = np.transpose(np.matmul(r, np.transpose(new_points - new_centroi
 # Sometimes our aligned points come out in the wrong order so we sort them back onto the original points
 #sorted_points = sort_points(aligned_points, original_points)
 
-sorted_points = np.multiply(aligned_points, np.tile([1,1,-1],(point_count,1)))
+sorted_points = np.multiply(aligned_points, np.tile(np.sign(np.multiply(original_points[0],aligned_points[0])),(point_count,1)))
 
 # Correct for accidental rotations of the grid about the normal of the plane
 r = kabsch_rotation(sorted_points, original_points)
@@ -47,12 +47,6 @@ sd = np.std(error) # Standard deviation of the error
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-
-for i, point in enumerate(sorted_points):
-    ax.text(sorted_points[i,0], sorted_points[i,1], sorted_points[i,2], i, [1,0,0])
-
-for i, point in enumerate(original_points):
-    ax.text(original_points[i,0], original_points[i,1], original_points[i,2], i, [1,0,0])
 
 ax.scatter(sorted_points[:,0], sorted_points[:,1], sorted_points[:,2], color='purple', label='aligned points')
 ax.scatter(original_points[:,0], original_points[:,1], original_points[:,2], color='blue', label='original points')
