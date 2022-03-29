@@ -30,25 +30,9 @@ def closest_point(point, points): #Return the index of the closest point
 
 def sort_points(points, cloud):
     sorted_points = np.zeros(np.shape(points))
-    length = np.shape(points)[0]
-    indexes = np.zeros(length)
-    distances = np.zeros((length,length))
     for i, point in enumerate(points):
         ind, dist = closest_point(point, cloud)
-        indexes[i] = ind
-        distances[i] = dist
         sorted_points[ind,:] = point
-
-    #duplicates = [int(f) for f in list((Counter(indexes) - Counter(set(indexes))).keys())]
-
-    #for duplicate in duplicates:
-    #    locations = np.where(indexes == duplicate)[0]
-    #    i = np.argmax(distances[locations,duplicates])
-    #    j = np.argmin(distances[locations,duplicates])
-    #
-    #    dist = np.linalg.norm(points[locations[i]]-cloud, axis=1)
-    #    new_index = np.argsort(dist)[1]
-    #    sorted_points[new_index,:] = points[locations[j]]
 
     return sorted_points
 

@@ -4,6 +4,14 @@ import matplotlib.pyplot as plt
 ellipsoid_res = 10 #Resolution of error ellipsoids
 ellipsoid_scale_factor = 1 #Scale factor of error ellipsoids
 
+big_tick_locator = 0.25
+small_tick_locator = 0.1
+
+font = {'family' : 'sans',
+        'size'   : 20}
+
+plt.rc('font', **font)
+
 def plot_ellispoid(origin, w, v):
 
     U = np.linspace(0, 2 * np.pi, ellipsoid_res)

@@ -226,9 +226,11 @@ ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', la
 ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
 ax.scatter(base_points[:,0], base_points[:,1], base_points[:,2], color='green', label='base locations')
 
+ax.xaxis.set_major_locator(plt.MultipleLocator(big_tick_locator))
+ax.yaxis.set_major_locator(plt.MultipleLocator(big_tick_locator))
+ax.zaxis.set_major_locator(plt.MultipleLocator(big_tick_locator))
 
-ax.set_xlim3d(-2, 2)
-ax.set_ylim3d(-2, 2)
-ax.set_zlim3d(-2, 2)
+ax.axis('equal')
+
 ax.legend()
 pylab.show()

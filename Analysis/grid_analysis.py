@@ -6,11 +6,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import pylab
 from modules.transformation import *
+from modules.graphing import *
 
 original_path = os.getcwd() + '/points/grid_calibration.csv'
 original_points = genfromtxt(original_path, delimiter=',')
 
-new_path = os.getcwd() + '/results/data2022.03.06.13.01.34.csv'
+new_path = os.getcwd() + '/results/data2022.02.24.17.02.08.csv'
 new_points = genfromtxt(new_path, delimiter=',')
 
 point_count = np.shape(original_points)[0]
@@ -51,8 +52,24 @@ ax = fig.add_subplot(111, projection='3d')
 ax.scatter(sorted_points[:,0], sorted_points[:,1], sorted_points[:,2], color='purple', label='aligned points')
 ax.scatter(original_points[:,0], original_points[:,1], original_points[:,2], color='blue', label='original points')
 
-ax.set_xlim3d(-1, 1)
-ax.set_ylim3d(-1, 1)
-ax.set_zlim3d(-1, 1)
+ax.set_xlim3d(-0.3, 0.3)
+ax.set_ylim3d(-0.3, 0.3)
+ax.set_zlim3d(-0.3, 0.3)
+
+plt.tick_params(
+    axis='x',          # changes apply to the x-axis
+    which='both',      # both major and minor ticks are affected
+    bottom=False,      # ticks along the bottom edge are off
+    top=False,         # ticks along the top edge are off
+    labelbottom=False) # labels along the bottom edge are off
+
+ax.xaxis.set_major_locator(plt.MultipleLocator(small_tick_locator))
+ax.yaxis.set_major_locator(plt.MultipleLocator(small_tick_locator))
+ax.zaxis.set_major_locator(plt.MultipleLocator(small_tick_locator))
+
+ax.set_aspect('equal', 'box')
+
+ax.view_init(elev=0, azim=0)
+
 ax.legend()
 pylab.show()

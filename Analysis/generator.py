@@ -9,7 +9,7 @@ from modules.config import *
 from modules.transformation import *
 
 read_path = os.getcwd() + '/points/grid_calibration.csv'
-write_path = os.getcwd() + '/angles/grid_calibration.csv'
+write_path = os.getcwd() + '/angles/experiment.csv'
 
 read_file = open(read_path, "r")
 write_file = open(write_path, "w")
@@ -17,23 +17,23 @@ write_file = open(write_path, "w")
 reading_count = 6
 
 base_locations = np.array([
-    [-1.5,-1,-1],
-    [-2,0,-1],
-    [-2.5,0.4,-1],
-    [-2.5,1.5,-1],
-    [-2,1.2,-1],
-    [-1.5,2.2,-1],
+    [-1.4,-1,-1.81],
+    [-1.9,0,-1.59],
+    [-2.5,0.7,-1.52],
+    [-2.4,1.4,-1.53],
+    [-1.6,1.3,-1.79],
+    [-1.5,2.2,-1.84],
 ])
 
-water_level = 2
+water_level = 0.2
 
 base_rotations = np.deg2rad([
-    [-40 , 4, 0],
-    [-30 , -2, 3],
-    [-10 , -3, -5],
-    [10 , 5, 8],
+    [-45 , -4, 0],
+    [-10 , -2, 3],
+    [0 , -3, -5],
+    [15 , -6, 4],
     [30 , -3, -5],
-    [60 , 5, 8]
+    [40 , -8, 2]
 ]) #Rotation about z, y and z axis according to the right hand rule (Euler angles)
 
 def mod_cart2sph(x, y, z, base_rotation, base_location):
