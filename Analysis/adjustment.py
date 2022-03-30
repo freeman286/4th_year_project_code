@@ -226,9 +226,19 @@ ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', la
 ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
 ax.scatter(base_points[:,0], base_points[:,1], base_points[:,2], color='green', label='base locations')
 
-format_axis(ax, big_tick_locator)
+format_axis(ax,
+            big_tick_locator,
+            np.concatenate((LSQ_points[:,0],pressure_points[:,0],base_points[:,0])),
+            np.concatenate((LSQ_points[:,1],pressure_points[:,1],base_points[:,1])),
+            np.concatenate((LSQ_points[:,2],pressure_points[:,2],base_points[:,2]))
+            )
 
-ax.axis('equal')
+#format_axis(ax,
+#            small_tick_locator,
+#            LSQ_points[:,0],
+#            LSQ_points[:,1],
+#            LSQ_points[:,2]
+#            )
 
 ax.legend()
 pylab.show()

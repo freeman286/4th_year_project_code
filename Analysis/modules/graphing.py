@@ -10,9 +10,10 @@ small_tick_locator = 0.1
 labelpad = 20
 
 font = {'family' : 'sans',
-        'size'   : 20}
+        'size'   : 15}
 
 plt.rc('font', **font)
+plt.rc('legend',fontsize=20) # using a size in points
 
 def plot_ellispoid(origin, w, v):
 
@@ -31,7 +32,7 @@ def plot_ellispoid(origin, w, v):
     ax = plt.gca()
     ax.plot_surface(x_dash, y_dash, z_dash, color='purple')
 
-def format_axis(ax, tick_size):
+def format_axis(ax, tick_size, X, Y, Z):
     ax.xaxis.set_major_locator(plt.MultipleLocator(tick_size))
     ax.yaxis.set_major_locator(plt.MultipleLocator(tick_size))
     ax.zaxis.set_major_locator(plt.MultipleLocator(tick_size))
@@ -43,3 +44,13 @@ def format_axis(ax, tick_size):
     ax.set_xlabel('x (m)')
     ax.set_ylabel('y (m)')
     ax.set_zlabel('z (m)')
+
+    # Bounding box
+    ax.set_aspect('equal')
+    max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max()
+    Xb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][0].flatten() + 0.5*(X.max()+X.min())
+    Yb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][1].flatten() + 0.5*(Y.max()+Y.min())
+    Zb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][2].flatten() + 0.5*(Z.max()+Z.min())
+
+    for xb, yb, zb in zip(Xb, Yb, Zb):
+       ax.plot([xb], [yb], [zb], 'w')

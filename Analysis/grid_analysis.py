@@ -52,10 +52,6 @@ ax = fig.add_subplot(111, projection='3d')
 ax.scatter(sorted_points[:,0], sorted_points[:,1], sorted_points[:,2], color='purple', label='aligned points')
 ax.scatter(original_points[:,0], original_points[:,1], original_points[:,2], color='blue', label='original points')
 
-ax.set_xlim3d(-0.3, 0.3)
-ax.set_ylim3d(-0.3, 0.3)
-ax.set_zlim3d(-0.3, 0.3)
-
 plt.tick_params(
     axis='x',          # changes apply to the x-axis
     which='both',      # both major and minor ticks are affected
@@ -63,9 +59,12 @@ plt.tick_params(
     top=False,         # ticks along the top edge are off
     labelbottom=False) # labels along the bottom edge are off
 
-format_axis(ax, small_tick_locator)
-
-ax.set_aspect('equal', 'box')
+format_axis(ax,
+            small_tick_locator,
+            sorted_points[:,0],
+            sorted_points[:,1],
+            sorted_points[:,2]
+            )
 
 ax.view_init(elev=0, azim=0)
 
