@@ -7,6 +7,8 @@ ellipsoid_scale_factor = 1 #Scale factor of error ellipsoids
 big_tick_locator = 0.25
 small_tick_locator = 0.1
 
+labelpad = 20
+
 font = {'family' : 'sans',
         'size'   : 20}
 
@@ -28,3 +30,16 @@ def plot_ellispoid(origin, w, v):
     # Plot the surface
     ax = plt.gca()
     ax.plot_surface(x_dash, y_dash, z_dash, color='purple')
+
+def format_axis(ax, tick_size):
+    ax.xaxis.set_major_locator(plt.MultipleLocator(tick_size))
+    ax.yaxis.set_major_locator(plt.MultipleLocator(tick_size))
+    ax.zaxis.set_major_locator(plt.MultipleLocator(tick_size))
+
+    ax.xaxis.labelpad = labelpad
+    ax.yaxis.labelpad = labelpad
+    ax.zaxis.labelpad = labelpad
+
+    ax.set_xlabel('x (m)')
+    ax.set_ylabel('y (m)')
+    ax.set_zlabel('z (m)')

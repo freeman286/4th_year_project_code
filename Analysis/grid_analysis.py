@@ -63,9 +63,7 @@ plt.tick_params(
     top=False,         # ticks along the top edge are off
     labelbottom=False) # labels along the bottom edge are off
 
-ax.xaxis.set_major_locator(plt.MultipleLocator(small_tick_locator))
-ax.yaxis.set_major_locator(plt.MultipleLocator(small_tick_locator))
-ax.zaxis.set_major_locator(plt.MultipleLocator(small_tick_locator))
+format_axis(ax, small_tick_locator)
 
 ax.set_aspect('equal', 'box')
 
