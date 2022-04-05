@@ -1,8 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-ellipsoid_res = 10 #Resolution of error ellipsoids
-ellipsoid_scale_factor = 1 #Scale factor of error ellipsoids
+# Get lighting object for shading surface plots.
+from matplotlib.colors import LightSource
+
+# Get colormaps to use with lighting object.
+from matplotlib import cm
+
+ellipsoid_res = 20 #Resolution of error ellipsoids
+ellipsoid_scale_factor = 10 #Scale factor of error ellipsoids
 
 big_tick_locator = 0.25
 small_tick_locator = 0.1
@@ -29,16 +35,25 @@ def plot_ellispoid(origin, w, v):
     z_dash = x * v[2,0] + y * v[2,1] + z * v[2,2] + np.tile(origin[2], (ellipsoid_res, ellipsoid_res))
 
     # Plot the surface
+    light = LightSource(90, 45,hsv_min_val=0.6)
+    rgb = np.ones((z_dash.shape[0], z_dash.shape[1], 3))
+    purple = np.array([1.0,0,1.0])
+    purple_surface = light.shade_rgb(rgb * purple, z_dash)
     ax = plt.gca()
-    ax.plot_surface(x_dash, y_dash, z_dash, color='purple')
+    ax.plot_surface(x_dash, y_dash, z_dash, antialiased=False,facecolors=purple_surface, alpha=0.2, linewidth=0)
+
+
 
 def format_axis(ax, tick_size, X, Y, Z):
     ax.xaxis.set_major_locator(plt.MultipleLocator(tick_size))
     ax.yaxis.set_major_locator(plt.MultipleLocator(tick_size))
     ax.zaxis.set_major_locator(plt.MultipleLocator(tick_size))
 
-    ax.xaxis.labelpad = labelpad
-    ax.yaxis.labelpad = labelpad
+    plt.xticks(rotation=90)
+    plt.yticks(rotation=90)
+
+    ax.xaxis.labelpad = 2*labelpad
+    ax.yaxis.labelpad = 2*labelpad
     ax.zaxis.labelpad = labelpad
 
     ax.set_xlabel('x (m)')

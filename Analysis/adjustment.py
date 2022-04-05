@@ -10,12 +10,12 @@ from modules.transformation import *
 from modules.graphing import *
 from modules.config import *
 
-reading_count = 5
+reading_count = 6
 
-read_path = os.getcwd() + '/angles/data2022.02.24.17.02.08.csv'
+read_path = os.getcwd() + '/angles/data2022.03.06.13.01.34.csv'
 read_file = open(read_path, "r")
 
-write_path = os.getcwd() + '/results/data2022.02.24.17.02.08.csv'
+write_path = os.getcwd() + '/results/data2022.03.06.13.01.34.csv'
 
 file_reader = csv.reader(read_file)
 
@@ -222,7 +222,7 @@ np.savetxt(write_path, LSQ_points, fmt='%f', delimiter=',')
 for n in range(point_count):
     plot_ellispoid(LSQ_points[n], sds[n], v[n])
 
-ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='LSQ points')
+ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='measured points')
 ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
 ax.scatter(base_points[:,0], base_points[:,1], base_points[:,2], color='green', label='base locations')
 
