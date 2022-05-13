@@ -219,8 +219,8 @@ while (not np.isclose(np.mean(sigma_v),1, atol=1e-15)): #Iterate until we have s
 
 np.savetxt(write_path, LSQ_points, fmt='%f', delimiter=',')
 
-for n in range(point_count):
-    plot_ellispoid(LSQ_points[n], sds[n], v[n])
+#for n in range(point_count):
+    #plot_ellispoid(LSQ_points[n], sds[n], v[n])
 
 ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='measured points')
 ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')

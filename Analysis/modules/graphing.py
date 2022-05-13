@@ -10,16 +10,20 @@ from matplotlib import cm
 ellipsoid_res = 20 #Resolution of error ellipsoids
 ellipsoid_scale_factor = 10 #Scale factor of error ellipsoids
 
-big_tick_locator = 0.25
+big_tick_locator = 0.5
 small_tick_locator = 0.1
 
-labelpad = 20
+linewidth = 2
+
+labelpad = 40
+
+fontsize = 20
 
 font = {'family' : 'sans',
-        'size'   : 15}
+        'size'   : fontsize}
 
 plt.rc('font', **font)
-plt.rc('legend',fontsize=20) # using a size in points
+plt.rc('legend',fontsize=fontsize) # using a size in points
 
 def plot_ellispoid(origin, w, v):
 
@@ -45,6 +49,14 @@ def plot_ellispoid(origin, w, v):
 
 
 def format_axis(ax, tick_size, X, Y, Z):
+    # Gridline thickness
+    ax.xaxis._axinfo["grid"].update({"linewidth":linewidth})
+    ax.yaxis._axinfo["grid"].update({"linewidth":linewidth})
+    ax.zaxis._axinfo["grid"].update({"linewidth":linewidth})
+
+    for axis in [ax.w_xaxis, ax.w_yaxis, ax.w_zaxis]:
+        axis.line.set_linewidth(1.5*linewidth)
+
     ax.xaxis.set_major_locator(plt.MultipleLocator(tick_size))
     ax.yaxis.set_major_locator(plt.MultipleLocator(tick_size))
     ax.zaxis.set_major_locator(plt.MultipleLocator(tick_size))
@@ -52,8 +64,8 @@ def format_axis(ax, tick_size, X, Y, Z):
     plt.xticks(rotation=90)
     plt.yticks(rotation=90)
 
-    ax.xaxis.labelpad = 2*labelpad
-    ax.yaxis.labelpad = 2*labelpad
+    ax.xaxis.labelpad = labelpad
+    ax.yaxis.labelpad = labelpad
     ax.zaxis.labelpad = labelpad
 
     ax.set_xlabel('x (m)')
@@ -69,3 +81,14 @@ def format_axis(ax, tick_size, X, Y, Z):
 
     for xb, yb, zb in zip(Xb, Yb, Zb):
        ax.plot([xb], [yb], [zb], 'w')
+
+    plt.tick_params(axis='x',labelsize=0.75*fontsize)
+    plt.tick_params(axis='y',labelsize=0.75*fontsize)
+
+    # fix z-axis ticks
+    plt.tick_params(
+        axis='z',
+        which='both',
+        pad=0.5*labelpad,
+        labelsize=0.75*fontsize
+    )
