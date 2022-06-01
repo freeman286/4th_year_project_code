@@ -11,7 +11,7 @@ from modules.graphing import *
 original_path = os.getcwd() + '/points/grid_calibration.csv'
 original_points = genfromtxt(original_path, delimiter=',')
 
-new_path = os.getcwd() + '/results/data2022.03.06.13.01.34.csv'
+new_path = os.getcwd() + '/results/data2022.02.24.17.02.08.csv'
 new_points = genfromtxt(new_path, delimiter=',')
 
 point_count = np.shape(original_points)[0]

@@ -5,17 +5,19 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import animation
 import pylab
 from modules.transformation import *
 from modules.graphing import *
 from modules.config import *
+import time
 
-reading_count = 6
+reading_count = 5
 
-read_path = os.getcwd() + '/angles/data2022.03.06.13.01.34.csv'
+read_path = os.getcwd() + '/angles/data2022.02.24.17.02.08.csv'
 read_file = open(read_path, "r")
 
-write_path = os.getcwd() + '/results/data2022.03.06.13.01.34.csv'
+write_path = os.getcwd() + '/results/data2022.02.24.17.02.08.csv'
 
 file_reader = csv.reader(read_file)
 
@@ -220,25 +222,49 @@ while (not np.isclose(np.mean(sigma_v),1, atol=1e-15)): #Iterate until we have s
 np.savetxt(write_path, LSQ_points, fmt='%f', delimiter=',')
 
 #for n in range(point_count):
-    #plot_ellispoid(LSQ_points[n], sds[n], v[n])
+#    plot_ellispoid(LSQ_points[n], sds[n], v[n])
 
-ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='measured points')
-ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
-ax.scatter(base_points[:,0], base_points[:,1], base_points[:,2], color='green', label='base locations')
+def init():
+    ax.scatter(LSQ_points[:,0], LSQ_points[:,1], LSQ_points[:,2], color='purple', label='measured points')
+    ax.scatter(pressure_points[:,0], pressure_points[:,1], pressure_points[:,2], color='blue', label='pressure locations')
+    ax.scatter(base_points[:,0], base_points[:,1], base_points[:,2], color='green', label='base locations')
 
-format_axis(ax,
-            big_tick_locator,
-            np.concatenate((LSQ_points[:,0],pressure_points[:,0],base_points[:,0])),
-            np.concatenate((LSQ_points[:,1],pressure_points[:,1],base_points[:,1])),
-            np.concatenate((LSQ_points[:,2],pressure_points[:,2],base_points[:,2]))
-            )
+    format_axis(ax,
+                big_tick_locator,
+                np.concatenate((LSQ_points[:,0],pressure_points[:,0],base_points[:,0])),
+                np.concatenate((LSQ_points[:,1],pressure_points[:,1],base_points[:,1])),
+                np.concatenate((LSQ_points[:,2],pressure_points[:,2],base_points[:,2]))
+                )
 
-#format_axis(ax,
-#            small_tick_locator,
-#            LSQ_points[:,0],
-#            LSQ_points[:,1],
-#            LSQ_points[:,2]
-#            )
+    #format_axis(ax,
+    #            small_tick_locator,
+    #            LSQ_points[:,0],
+    #            LSQ_points[:,1],
+    #            LSQ_points[:,2]
+    #            )
 
-ax.legend()
-pylab.show()
+    ax.legend()
+
+    return fig,
+
+def animate(i):
+    print("frame " + str(i))
+    ax.view_init(elev=30., azim=i)
+    return fig,
+
+fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
+fig.set_size_inches(graph_width, graph_height, True)
+
+# Animate
+anim = animation.FuncAnimation(fig, animate, init_func=init, frames=360, interval=20, blit=True)
+
+# Save
+#anim.save('animation.gif', fps=30, writer='pillow',dpi=dpi)
+
+writergif = animation.PillowWriter(fps = 30)
+
+# fig.dpi is default dpi, but can also be specified explicitly if preferred
+writergif.setup(fig, "animation.gif", dpi = dpi)
+
+# May or may not need to specify dpi argument
+anim.save("animation.gif", writer = writergif, dpi = dpi)
